@@ -307,3 +307,65 @@ body.dark-mode .modal-footer {
 body.dark-mode .text-muted, body.dark-mode .text-secondary {
     color: #a0a0b0 !important;
 }
+
+/* Dark Mode List Items & Modal Text Fixes */
+body.dark-mode .list-group-item,
+body.dark-mode #modalIngredientsList .list-group-item {
+    color: #e2e8f0 !important;
+    background-color: transparent !important;
+    border-color: #2e2e38 !important;
+}
+
+body.dark-mode #modalInstructionsList,
+body.dark-mode #modalInstructionsList li {
+    color: #d1d5db !important;
+}
+
+/* Dark Mode Form Inputs & Selects */
+body.dark-mode .form-control,
+body.dark-mode .form-select {
+    background-color: #282832 !important;
+    color: #ffffff !important;
+    border-color: #3e3e4d !important;
+}
+
+body.dark-mode .form-control:focus,
+body.dark-mode .form-select:focus {
+    background-color: #2c2c38 !important;
+    color: #ffffff !important;
+    border-color: var(--accent-color) !important;
+}
+
+body.dark-mode .form-control::placeholder {
+    color: #8a8a9e !important;
+}
+
+/* Dark Mode Borders & Buttons */
+body.dark-mode .border,
+body.dark-mode .border-bottom,
+body.dark-mode .border-top,
+body.dark-mode .border-start,
+body.dark-mode .border-end {
+    border-color: #2e2e38 !important;
+}
+
+body.dark-mode .btn-outline-secondary {
+    color: #d0d0d0 !important;
+    border-color: #4e4e5e !important;
+}
+
+body.dark-mode .btn-outline-secondary:hover {
+    background-color: #4e4e5e !important;
+    color: #ffffff !important;
+}
+
+body.dark-mode .table {
+    color: #e0e0e0 !important;
+    border-color: #2e2e38 !important;
+}
+
+body.dark-mode .table-light,
+body.dark-mode .table-light th {
+    background-color: #282832 !important;
+    color: #ffffff !important;
+}
