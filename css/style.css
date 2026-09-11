@@ -78,6 +78,11 @@ body {
     background-size: cover;
     background-position: center;
     position: relative;
+    display: none;
+}
+
+.hero-slide:first-child {
+    display: block;
 }
 
 .hero-overlay {

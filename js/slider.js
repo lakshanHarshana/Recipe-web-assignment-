@@ -24,6 +24,9 @@ class HeroSlider {
     init() {
         if (this.slides.length === 0) return;
 
+        // Force show initial slide (index 0)
+        this.showSlide(0);
+
         // Build indicators if container exists
         if (this.indicatorsContainer) {
             this.indicatorsContainer.innerHTML = '';

@@ -39,7 +39,7 @@ $categories = ['All', 'Breakfast', 'Italian', 'Asian', 'Dessert', 'Healthy', 'Qu
         </div>
 
         <!-- Slide 2 -->
-        <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=80');" style="display: none;">
+        <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=80');">
             <div class="hero-overlay p-4 p-md-5">
                 <div class="hero-content">
                     <span class="badge bg-warning text-dark mb-2 px-3 py-2 text-uppercase fs-6">Healthy Living</span>
@@ -53,7 +53,7 @@ $categories = ['All', 'Breakfast', 'Italian', 'Asian', 'Dessert', 'Healthy', 'Qu
         </div>
 
         <!-- Slide 3 -->
-        <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=1200&q=80');" style="display: none;">
+        <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=1200&q=80');">
             <div class="hero-overlay p-4 p-md-5">
                 <div class="hero-content">
                     <span class="badge bg-accent mb-2 px-3 py-2 text-uppercase fs-6">Sweet Temptations</span>
