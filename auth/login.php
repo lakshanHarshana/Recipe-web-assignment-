@@ -26,8 +26,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($errors)) {
         try {
-            $stmt = $pdo->prepare("SELECT * FROM users WHERE email = :input OR username = :input LIMIT 1");
-            $stmt->execute([':input' => $email_username]);
+            $stmt = $pdo->prepare("SELECT * FROM users WHERE email = :email OR username = :username LIMIT 1");
+            $stmt->execute([':email' => $email_username, ':username' => $email_username]);
             $user = $stmt->fetch();
 
             if ($user && password_verify($password, $user['password'])) {

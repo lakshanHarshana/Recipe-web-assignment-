@@ -23,8 +23,12 @@ try {
 
     // Keyword Search (searches title, category, ingredients, and instructions)
     if (!empty($search_query)) {
-        $sql .= " AND (r.title LIKE :query OR r.category LIKE :query OR r.ingredients LIKE :query OR r.instructions LIKE :query)";
-        $params[':query'] = '%' . $search_query . '%';
+        $sql .= " AND (r.title LIKE :q1 OR r.category LIKE :q2 OR r.ingredients LIKE :q3 OR r.instructions LIKE :q4)";
+        $searchTerm = '%' . $search_query . '%';
+        $params[':q1'] = $searchTerm;
+        $params[':q2'] = $searchTerm;
+        $params[':q3'] = $searchTerm;
+        $params[':q4'] = $searchTerm;
     }
 
     $sql .= " ORDER BY r.created_at DESC";
