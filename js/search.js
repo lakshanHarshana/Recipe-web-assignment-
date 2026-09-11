@@ -108,10 +108,17 @@ function initRecipeSearch() {
             if (difficultyClass === 'easy') badgeHtml = '<span class="badge bg-success">Easy</span>';
             if (difficultyClass === 'hard') badgeHtml = '<span class="badge bg-danger">Hard</span>';
 
+            const favs = getFavorites();
+            const isFav = favs.includes(parseInt(recipe.id));
+            const heartIcon = isFav ? '<i class="bi bi-heart-fill text-danger"></i>' : '<i class="bi bi-heart"></i>';
+
             cardCol.innerHTML = `
                 <div class="card recipe-card h-100 shadow-sm" data-recipe-id="${recipe.id}">
                     <div class="recipe-card-img-wrapper">
                         <span class="category-pill">${escapeHtml(recipe.category)}</span>
+                        <button type="button" class="fav-badge-btn position-absolute top-0 end-0 m-3 btn btn-light btn-sm rounded-circle shadow-sm" onclick="event.stopPropagation(); toggleFavorite(${recipe.id}, this);" title="Bookmark Recipe">
+                            ${heartIcon}
+                        </button>
                         <img src="${escapeHtml(imgUrl)}" alt="${escapeHtml(recipe.title)}" loading="lazy">
                     </div>
                     <div class="card-body d-flex flex-column p-4">

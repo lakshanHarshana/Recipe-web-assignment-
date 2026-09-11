@@ -302,7 +302,10 @@ try {
                                         <h6 class="fw-bold text-dark text-truncate mb-1"><?php echo sanitize($rec['title']); ?></h6>
                                         <small class="text-muted"><i class="bi bi-clock me-1"></i><?php echo (int)$rec['prep_time'] + (int)$rec['cook_time']; ?> mins | <?php echo sanitize($rec['difficulty']); ?></small>
                                     </div>
-                                    <div>
+                                    <div class="d-flex gap-2">
+                                        <a href="edit_recipe.php?id=<?php echo (int)$rec['id']; ?>" class="btn btn-outline-primary btn-sm rounded-circle" title="Edit Recipe">
+                                            <i class="bi bi-pencil-fill"></i>
+                                        </a>
                                         <form action="dashboard.php" method="POST" onsubmit="return confirm('Are you sure you want to delete this recipe?');">
                                             <input type="hidden" name="action" value="delete_recipe">
                                             <input type="hidden" name="recipe_id" value="<?php echo (int)$rec['id']; ?>">
@@ -318,6 +321,43 @@ try {
                 <?php endif; ?>
 
             </div>
+
+            <!-- Contact Messages Inbox Panel -->
+            <?php
+            try {
+                $msg_stmt = $pdo->query("SELECT * FROM messages ORDER BY created_at DESC");
+                $user_messages = $msg_stmt->fetchAll();
+            } catch (PDOException $e) {
+                $user_messages = [];
+            }
+            ?>
+            <div class="bg-white p-4 rounded-4 shadow-sm border mt-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="font-heading fw-bold text-dark mb-0"><i class="bi bi-inbox-fill text-accent me-2"></i>Contact Submissions</h5>
+                    <span class="badge bg-secondary rounded-pill"><?php echo count($user_messages); ?> Inquiry</span>
+                </div>
+                <p class="text-muted small mb-3">Messages submitted by visitors via Contact Us page.</p>
+
+                <?php if (empty($user_messages)): ?>
+                    <p class="text-muted small text-center py-3 mb-0">No messages received yet.</p>
+                <?php else: ?>
+                    <div class="vstack gap-2" style="max-height: 300px; overflow-y: auto;">
+                        <?php foreach ($user_messages as $m): ?>
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <strong class="text-dark small"><i class="bi bi-person me-1"></i><?php echo sanitize($m['name']); ?></strong>
+                                    <small class="text-muted fs-8"><?php echo date('M d, H:i', strtotime($m['created_at'])); ?></small>
+                                </div>
+                                <div class="small text-secondary mb-1">
+                                    <i class="bi bi-envelope me-1"></i><?php echo sanitize($m['email']); ?> | <strong><?php echo sanitize($m['subject']); ?></strong>
+                                </div>
+                                <p class="small text-muted mb-0 bg-white p-2 rounded border"><?php echo sanitize($m['message']); ?></p>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+
         </div>
 
     </div>

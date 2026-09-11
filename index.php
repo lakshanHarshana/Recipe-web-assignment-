@@ -145,6 +145,9 @@ $categories = ['All', 'Breakfast', 'Italian', 'Asian', 'Dessert', 'Healthy', 'Qu
                                 <?php echo $cat; ?>
                             </button>
                         <?php endforeach; ?>
+                        <button type="button" class="category-filter-btn text-danger border-danger" data-category="Favorites">
+                            <i class="bi bi-heart-fill me-1"></i>Favorites
+                        </button>
                     </div>
                 </div>
             </div>

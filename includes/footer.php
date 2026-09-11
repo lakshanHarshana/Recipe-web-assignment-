@@ -30,11 +30,27 @@ $js_prefix = (basename($_SERVER['PHP_SELF']) == 'register.php' || basename($_SER
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
                                     <span><i class="bi bi-people text-accent me-2"></i>Servings</span>
-                                    <strong id="modalServings">4 Servings</strong>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle px-2 py-0" id="btnScaleDown">-</button>
+                                        <strong id="modalServings">4</strong>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle px-2 py-0" id="btnScaleUp">+</button>
+                                    </div>
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center">
                                     <span><i class="bi bi-bar-chart text-accent me-2"></i>Difficulty</span>
                                     <span id="modalDifficulty">Easy</span>
+                                </div>
+                            </div>
+
+                            <!-- Kitchen Timer Widget -->
+                            <div class="p-3 bg-light rounded-3 mt-3 border">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small fw-bold"><i class="bi bi-stopwatch text-accent me-2"></i>Kitchen Timer</span>
+                                    <span id="timerDisplay" class="font-monospace fw-bold fs-5 text-accent">15:00</span>
+                                </div>
+                                <div class="d-flex gap-2 mt-2">
+                                    <button type="button" id="btnStartTimer" class="btn btn-sm btn-accent flex-grow-1 rounded-pill">Start</button>
+                                    <button type="button" id="btnResetTimer" class="btn btn-sm btn-outline-secondary rounded-pill">Reset</button>
                                 </div>
                             </div>
                         </div>
@@ -45,9 +61,39 @@ $js_prefix = (basename($_SERVER['PHP_SELF']) == 'register.php' || basename($_SER
                             </ul>
 
                             <h5 class="fw-bold border-bottom pb-2 mb-3 text-dark"><i class="bi bi-journal-text text-accent me-2"></i>Step-by-Step Instructions</h5>
-                            <ol id="modalInstructionsList" class="ps-3 mb-0 text-muted lh-lg">
+                            <ol id="modalInstructionsList" class="ps-3 mb-4 text-muted lh-lg">
                                 <!-- Populated dynamically by JavaScript -->
                             </ol>
+
+                            <!-- Reviews & Rating Section -->
+                            <div class="pt-3 border-top">
+                                <h5 class="fw-bold text-dark mb-3"><i class="bi bi-star-fill text-warning me-2"></i>Reviews & Ratings (<span id="modalReviewCount">0</span>)</h5>
+                                <div id="modalReviewsContainer" class="vstack gap-2 mb-3" style="max-height: 180px; overflow-y: auto;">
+                                    <!-- Loaded dynamically -->
+                                </div>
+
+                                <?php if (is_logged_in()): ?>
+                                    <form id="reviewForm" class="p-3 bg-light rounded-3 border">
+                                        <input type="hidden" id="reviewRecipeId" value="">
+                                        <h6 class="fw-bold small mb-2">Leave a Rating & Review</h6>
+                                        <div class="mb-2">
+                                            <select id="reviewRatingSelect" class="form-select form-select-sm" required>
+                                                <option value="5">⭐⭐⭐⭐⭐ 5 - Excellent</option>
+                                                <option value="4">⭐⭐⭐⭐ 4 - Very Good</option>
+                                                <option value="3">⭐⭐⭐ 3 - Average</option>
+                                                <option value="2">⭐⭐ 2 - Below Average</option>
+                                                <option value="1">⭐ 1 - Poor</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-2">
+                                            <textarea id="reviewCommentText" class="form-control form-control-sm" rows="2" placeholder="Write your review..."></textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-accent btn-sm rounded-pill px-4">Submit Review</button>
+                                    </form>
+                                <?php else: ?>
+                                    <p class="small text-muted mb-0"><a href="<?php echo get_base_url(); ?>auth/login.php" class="text-accent fw-bold">Log in</a> to leave a review!</p>
+                                <?php endif; ?>
+                            </div>
                         </div>
                     </div>
                 </div>

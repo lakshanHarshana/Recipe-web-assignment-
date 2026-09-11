@@ -259,3 +259,51 @@ body {
     align-items: center;
     justify-content: center;
 }
+
+/* Bookmark Favorite Button */
+.fav-badge-btn {
+    z-index: 5;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease;
+}
+
+.fav-badge-btn:hover {
+    transform: scale(1.15);
+}
+
+/* Dark Mode Theme */
+body.dark-mode {
+    background-color: #121216 !important;
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode .bg-white, 
+body.dark-mode .card,
+body.dark-mode .search-container,
+body.dark-mode .modal-content {
+    background-color: #1e1e24 !important;
+    color: #e0e0e0 !important;
+    border-color: #2e2e38 !important;
+}
+
+body.dark-mode .text-dark,
+body.dark-mode .card-title,
+body.dark-mode h1, body.dark-mode h2, body.dark-mode h3, body.dark-mode h4, body.dark-mode h5, body.dark-mode h6 {
+    color: #ffffff !important;
+}
+
+body.dark-mode .bg-light,
+body.dark-mode .recipe-meta-grid,
+body.dark-mode .modal-footer {
+    background-color: #282832 !important;
+    color: #d0d0d0 !important;
+}
+
+body.dark-mode .text-muted, body.dark-mode .text-secondary {
+    color: #a0a0b0 !important;
+}

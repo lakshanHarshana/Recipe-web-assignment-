@@ -68,10 +68,15 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 </ul>
                 
                 <div class="d-flex align-items-center gap-2">
+                    <!-- Theme Toggle Button -->
+                    <button id="themeToggleBtn" class="btn btn-outline-light btn-sm rounded-circle px-2 py-1 me-1" title="Toggle Theme">
+                        <i class="bi bi-moon-stars-fill"></i>
+                    </button>
+
                     <?php if (is_logged_in()): ?>
-                        <span class="text-light me-2 d-none d-md-inline">
+                        <a href="<?php echo get_base_url(); ?>auth/profile.php" class="text-light me-2 d-none d-md-inline text-decoration-none text-hover-accent" title="View Profile">
                             <i class="bi bi-person-circle text-accent me-1"></i> <?php echo sanitize($_SESSION['username']); ?>
-                        </span>
+                        </a>
                         <a href="<?php echo get_base_url(); ?>auth/logout.php" class="btn btn-outline-light btn-sm rounded-pill px-3">
                             <i class="bi bi-box-arrow-right me-1"></i> Logout
                         </a>
