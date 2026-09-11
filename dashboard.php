@@ -52,9 +52,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         $errors['instructions'] = 'Please provide step-by-step instructions (at least 15 characters).';
     }
 
-    // Default placeholder image if left empty
-    if (empty($image_url)) {
-        $image_url = 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=800&q=80';
+    // File Upload Handling (.jpg, .png, .webp, .gif)
+    $uploaded_image_url = '';
+    if (isset($_FILES['recipe_image']) && $_FILES['recipe_image']['error'] === UPLOAD_ERR_OK) {
+        $file_tmp = $_FILES['recipe_image']['tmp_name'];
+        $file_name = $_FILES['recipe_image']['name'];
+        $file_size = $_FILES['recipe_image']['size'];
+        $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+
+        $allowed_exts = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+
+        if (!in_array($file_ext, $allowed_exts)) {
+            $errors['recipe_image'] = 'Invalid file format. Allowed: .jpg, .jpeg, .png, .webp, .gif';
+        } elseif ($file_size > 5 * 1024 * 1024) {
+            $errors['recipe_image'] = 'Uploaded file exceeds maximum size of 5MB.';
+        } else {
+            $upload_dir = __DIR__ . '/images/recipes/';
+            if (!is_dir($upload_dir)) {
+                mkdir($upload_dir, 0755, true);
+            }
+
+            $new_filename = 'recipe_' . time() . '_' . uniqid() . '.' . $file_ext;
+            $destination = $upload_dir . $new_filename;
+
+            if (move_uploaded_file($file_tmp, $destination)) {
+                $uploaded_image_url = 'images/recipes/' . $new_filename;
+            } else {
+                $errors['recipe_image'] = 'Failed to upload image file. Please try again.';
+            }
+        }
+    }
+
+    // Determine final image path: Uploaded File > Image URL Input > Default Placeholder
+    if (!empty($uploaded_image_url)) {
+        $final_image_url = $uploaded_image_url;
+    } elseif (!empty($image_url)) {
+        $final_image_url = $image_url;
+    } else {
+        $final_image_url = 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=800&q=80';
     }
 
     if (empty($errors)) {
@@ -71,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 ':difficulty' => $difficulty,
                 ':ingredients' => $ingredients,
                 ':instructions' => $instructions,
-                ':image_url' => $image_url
+                ':image_url' => $final_image_url
             ]);
 
             set_flash('success', 'Recipe "' . sanitize($title) . '" published successfully!');
@@ -136,7 +171,7 @@ try {
                     <div class="alert alert-danger mb-4"><?php echo sanitize($errors['general']); ?></div>
                 <?php endif; ?>
 
-                <form id="addRecipeForm" action="dashboard.php" method="POST" novalidate>
+                <form id="addRecipeForm" action="dashboard.php" method="POST" enctype="multipart/form-data" novalidate>
                     <input type="hidden" name="action" value="add_recipe">
 
                     <div class="mb-3">
@@ -200,10 +235,26 @@ try {
                         </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="image_url" class="form-label fw-medium">Recipe Image URL</label>
-                        <input type="url" class="form-control" id="image_url" name="image_url" placeholder="https://images.unsplash.com/..." value="<?php echo sanitize($_POST['image_url'] ?? ''); ?>">
-                        <small class="text-muted">Paste an online image URL. Leave blank for default placeholder.</small>
+                    <div class="mb-3 p-3 bg-light rounded-3 border">
+                        <label class="form-label fw-bold text-dark mb-2"><i class="bi bi-image text-accent me-2"></i>Recipe Image</label>
+                        
+                        <div class="mb-3">
+                            <label for="recipe_image" class="form-label small fw-medium text-secondary mb-1">
+                                <i class="bi bi-upload me-1"></i>Upload Image File (.jpg, .png, .webp, .gif)
+                            </label>
+                            <input type="file" class="form-control <?php echo isset($errors['recipe_image']) ? 'is-invalid-custom' : ''; ?>" id="recipe_image" name="recipe_image" accept="image/jpeg,image/png,image/webp,image/gif">
+                            <?php if (isset($errors['recipe_image'])): ?>
+                                <div class="invalid-feedback-custom d-block"><?php echo sanitize($errors['recipe_image']); ?></div>
+                            <?php endif; ?>
+                        </div>
+
+                        <div>
+                            <label for="image_url" class="form-label small fw-medium text-secondary mb-1">
+                                <i class="bi bi-link-45deg me-1"></i>OR Paste Web Image URL
+                            </label>
+                            <input type="url" class="form-control" id="image_url" name="image_url" placeholder="https://images.unsplash.com/..." value="<?php echo sanitize($_POST['image_url'] ?? ''); ?>">
+                        </div>
+                        <small class="text-muted d-block mt-2 fs-7">Choose a photo from your computer OR paste an image link. Leave blank for default dish photo.</small>
                     </div>
 
                     <div class="mb-3">
