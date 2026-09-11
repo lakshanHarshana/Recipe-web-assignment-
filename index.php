@@ -168,6 +168,9 @@ $categories = ['All', 'Breakfast', 'Italian', 'Asian', 'Dessert', 'Healthy', 'Qu
                     <div class="card recipe-card h-100 shadow-sm" onclick='openRecipeModal(<?php echo json_encode($recipe, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>)'>
                         <div class="recipe-card-img-wrapper">
                             <span class="category-pill"><?php echo sanitize($recipe['category']); ?></span>
+                            <button type="button" class="fav-badge-btn position-absolute top-0 end-0 m-3 btn btn-light btn-sm rounded-circle shadow-sm" data-recipe-id="<?php echo (int)$recipe['id']; ?>" onclick="event.stopPropagation(); toggleFavorite(<?php echo (int)$recipe['id']; ?>, this);" title="Bookmark Recipe">
+                                <i class="bi bi-heart"></i>
+                            </button>
                             <img src="<?php echo !empty($recipe['image_url']) ? sanitize($recipe['image_url']) : 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=800&q=80'; ?>" alt="<?php echo sanitize($recipe['title']); ?>" loading="lazy">
                         </div>
                         <div class="card-body d-flex flex-column p-4">

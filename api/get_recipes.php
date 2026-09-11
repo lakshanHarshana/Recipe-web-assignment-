@@ -15,10 +15,22 @@ try {
     
     $params = [];
 
-    // Category Filter
+    // Category or Favorites Filter
     if (!empty($category) && $category !== 'All') {
-        $sql .= " AND r.category = :category";
-        $params[':category'] = $category;
+        if ($category === 'Favorites') {
+            $fav_ids_raw = isset($_GET['fav_ids']) ? trim($_GET['fav_ids']) : '';
+            $fav_ids = array_filter(array_map('intval', explode(',', $fav_ids_raw)), function($v) { return $v > 0; });
+            
+            if (!empty($fav_ids)) {
+                $in_clause = implode(',', $fav_ids);
+                $sql .= " AND r.id IN ($in_clause)";
+            } else {
+                $sql .= " AND 1=0";
+            }
+        } else {
+            $sql .= " AND r.category = :category";
+            $params[':category'] = $category;
+        }
     }
 
     // Keyword Search (searches title, category, ingredients, and instructions)

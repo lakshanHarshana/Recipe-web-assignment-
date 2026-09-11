@@ -17,7 +17,18 @@ document.addEventListener('DOMContentLoaded', () => {
     initServingsScaler();
     initKitchenTimer();
     initReviewForm();
+    initFavoriteButtons();
 });
+
+function initFavoriteButtons() {
+    const favs = getFavorites();
+    document.querySelectorAll('.fav-badge-btn').forEach(btn => {
+        const id = parseInt(btn.dataset.recipeId);
+        if (id && favs.includes(id)) {
+            btn.innerHTML = '<i class="bi bi-heart-fill text-danger"></i>';
+        }
+    });
+}
 
 /**
  * Dark / Light Mode Theme Toggle

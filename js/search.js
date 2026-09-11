@@ -44,7 +44,11 @@ function initRecipeSearch() {
      * Fetch filtered recipes from API endpoint
      */
     function fetchFilteredRecipes(query, category) {
-        const url = `api/get_recipes.php?q=${encodeURIComponent(query)}&category=${encodeURIComponent(category)}`;
+        let url = `api/get_recipes.php?q=${encodeURIComponent(query)}&category=${encodeURIComponent(category)}`;
+        if (category === 'Favorites') {
+            const favs = getFavorites();
+            url += `&fav_ids=${favs.join(',')}`;
+        }
         
         recipeGrid.innerHTML = `
             <div class="col-12 text-center py-5">
@@ -62,7 +66,7 @@ function initRecipeSearch() {
             })
             .then(data => {
                 if (data.status === 'success') {
-                    renderRecipes(data.recipes);
+                    renderRecipes(data.recipes, category);
                     if (recipeCountBadge) {
                         recipeCountBadge.textContent = `${data.count} Recipe${data.count === 1 ? '' : 's'} Found`;
                     }
@@ -80,15 +84,16 @@ function initRecipeSearch() {
     /**
      * Render Recipe Cards into Grid Container
      */
-    function renderRecipes(recipes) {
+    function renderRecipes(recipes, category = 'All') {
         recipeGrid.innerHTML = '';
 
         if (!recipes || recipes.length === 0) {
+            const isFav = category === 'Favorites';
             recipeGrid.innerHTML = `
                 <div class="col-12 text-center py-5 animate-fade-in">
-                    <i class="bi bi-search-heart fs-1 text-muted d-block mb-3"></i>
-                    <h4 class="fw-bold">No Recipes Found</h4>
-                    <p class="text-muted">We couldn't find any recipes matching your search criteria. Try a different keyword or category!</p>
+                    <i class="bi ${isFav ? 'bi-heartbreak text-danger' : 'bi-search-heart text-muted'} fs-1 d-block mb-3"></i>
+                    <h4 class="fw-bold">${isFav ? 'No Favorites Saved Yet' : 'No Recipes Found'}</h4>
+                    <p class="text-muted">${isFav ? 'Click the heart icon on any recipe card to save it to your personal favorites!' : 'We couldn\'t find any recipes matching your search criteria. Try a different keyword or category!'}</p>
                 </div>
             `;
             return;
