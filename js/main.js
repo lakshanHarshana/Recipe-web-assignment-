@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initKitchenTimer();
     initReviewForm();
     initFavoriteButtons();
+    loadCustomerFavorites();
 });
 
 function initFavoriteButtons() {
@@ -26,8 +27,66 @@ function initFavoriteButtons() {
         const id = parseInt(btn.dataset.recipeId);
         if (id && favs.includes(id)) {
             btn.innerHTML = '<i class="bi bi-heart-fill text-danger"></i>';
+        } else {
+            btn.innerHTML = '<i class="bi bi-heart"></i>';
         }
     });
+}
+
+function loadCustomerFavorites() {
+    const grid = document.getElementById('customerFavoritesGrid');
+    if (!grid) return;
+
+    const favs = getFavorites();
+    if (!favs || favs.length === 0) {
+        grid.innerHTML = `
+            <div class="col-12 text-center py-4">
+                <i class="bi bi-heartbreak text-muted fs-1 d-block mb-2"></i>
+                <p class="text-muted small">You haven't bookmarked any favorite recipes yet.</p>
+                <a href="index.php#recipes-section" class="btn btn-accent rounded-pill btn-sm px-4 py-2"><i class="bi bi-compass me-1"></i>Explore Catalog & Bookmark Recipes</a>
+            </div>
+        `;
+        return;
+    }
+
+    grid.innerHTML = '<div class="col-12 text-center py-3"><div class="spinner-border spinner-border-sm text-accent"></div> Loading your favorites...</div>';
+
+    fetch(`api/get_recipes.php?category=Favorites&fav_ids=${favs.join(',')}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success' && data.recipes.length > 0) {
+                grid.innerHTML = '';
+                data.recipes.forEach(recipe => {
+                    const col = document.createElement('div');
+                    col.className = 'col-md-6 mb-3';
+                    const imgUrl = recipe.image_url || 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=800&q=80';
+                    col.innerHTML = `
+                        <div class="card border rounded-3 p-2 shadow-sm h-100 hover-shadow transition cursor-pointer" onclick='openRecipeModal(${JSON.stringify(recipe)})'>
+                            <div class="d-flex gap-3 align-items-center">
+                                <img src="${escapeHtml(imgUrl)}" alt="${escapeHtml(recipe.title)}" class="rounded-3 object-fit-cover" style="width: 65px; height: 65px;">
+                                <div class="flex-grow-1 min-w-0">
+                                    <span class="badge bg-light text-dark border mb-1">${escapeHtml(recipe.category)}</span>
+                                    <h6 class="fw-bold text-dark text-truncate mb-1" style="font-size: 0.95rem;">${escapeHtml(recipe.title)}</h6>
+                                    <small class="text-muted"><i class="bi bi-clock me-1 text-accent"></i>${recipe.prep_time + recipe.cook_time} mins</small>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    grid.appendChild(col);
+                });
+            } else {
+                grid.innerHTML = `
+                    <div class="col-12 text-center py-4">
+                        <i class="bi bi-heartbreak text-muted fs-1 d-block mb-2"></i>
+                        <p class="text-muted small">No saved recipes found.</p>
+                        <a href="index.php#recipes-section" class="btn btn-accent rounded-pill btn-sm px-4 py-2"><i class="bi bi-compass me-1"></i>Browse Recipes</a>
+                    </div>
+                `;
+            }
+        })
+        .catch(err => {
+            console.error('Error loading customer favorites:', err);
+        });
 }
 
 /**
@@ -375,12 +434,12 @@ function toggleFavorite(recipeId, btnEl) {
     const id = parseInt(recipeId);
     if (favs.includes(id)) {
         favs = favs.filter(f => f !== id);
-        if (btnEl) btnEl.innerHTML = '<i class="bi bi-heart"></i>';
     } else {
         favs.push(id);
-        if (btnEl) btnEl.innerHTML = '<i class="bi bi-heart-fill text-danger"></i>';
     }
     localStorage.setItem('flavorcraft_favorites', JSON.stringify(favs));
+    initFavoriteButtons();
+    loadCustomerFavorites();
 }
 
 function escapeHtml(text) {
