@@ -19,6 +19,7 @@ CREATE TABLE `users` (
   `username` VARCHAR(50) NOT NULL UNIQUE,
   `email` VARCHAR(100) NOT NULL UNIQUE,
   `password` VARCHAR(255) NOT NULL,
+  `role` ENUM('Chef', 'Customer') NOT NULL DEFAULT 'Chef',
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -94,10 +95,10 @@ CREATE TABLE `favorites` (
 -- Hashed using password_hash('Password123!', PASSWORD_DEFAULT)
 -- --------------------------------------------------------
 
-INSERT INTO `users` (`id`, `username`, `email`, `password`, `created_at`) VALUES
-(1, 'chef_maria', 'maria@example.com', '$2y$10$wO7v8GgS4qP2hHqD/mJgje1M0Z/TzM0D7Gg1V1n5wW7Y0wZ9eE2yS', '2026-01-10 10:00:00'),
-(2, 'john_doe', 'john@example.com', '$2y$10$wO7v8GgS4qP2hHqD/mJgje1M0Z/TzM0D7Gg1V1n5wW7Y0wZ9eE2yS', '2026-01-15 11:30:00'),
-(3, 'spice_master', 'alex@example.com', '$2y$10$wO7v8GgS4qP2hHqD/mJgje1M0Z/TzM0D7Gg1V1n5wW7Y0wZ9eE2yS', '2026-02-01 14:15:00');
+INSERT INTO `users` (`id`, `username`, `email`, `password`, `role`, `created_at`) VALUES
+(1, 'chef_maria', 'maria@example.com', '$2y$10$wO7v8GgS4qP2hHqD/mJgje1M0Z/TzM0D7Gg1V1n5wW7Y0wZ9eE2yS', 'Chef', '2026-01-10 10:00:00'),
+(2, 'john_doe', 'john@example.com', '$2y$10$wO7v8GgS4qP2hHqD/mJgje1M0Z/TzM0D7Gg1V1n5wW7Y0wZ9eE2yS', 'Customer', '2026-01-15 11:30:00'),
+(3, 'spice_master', 'alex@example.com', '$2y$10$wO7v8GgS4qP2hHqD/mJgje1M0Z/TzM0D7Gg1V1n5wW7Y0wZ9eE2yS', 'Chef', '2026-02-01 14:15:00');
 
 INSERT INTO `recipes` (`id`, `user_id`, `title`, `category`, `prep_time`, `cook_time`, `servings`, `difficulty`, `ingredients`, `instructions`, `image_url`, `created_at`) VALUES
 (1, 1, 'Classic Creamy Carbonara', 'Italian', 15, 20, 4, 'Medium', 

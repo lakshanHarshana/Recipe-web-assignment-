@@ -28,10 +28,22 @@ function current_user() {
         return [
             'id' => $_SESSION['user_id'],
             'username' => $_SESSION['username'] ?? 'User',
-            'email' => $_SESSION['user_email'] ?? ''
+            'email' => $_SESSION['user_email'] ?? '',
+            'role' => $_SESSION['user_role'] ?? 'Customer'
         ];
     }
     return null;
+}
+
+/**
+ * Role check helpers
+ */
+function is_chef() {
+    return is_logged_in() && ($_SESSION['user_role'] ?? '') === 'Chef';
+}
+
+function is_customer() {
+    return is_logged_in() && ($_SESSION['user_role'] ?? '') === 'Customer';
 }
 
 /**
@@ -41,6 +53,18 @@ function require_login() {
     if (!is_logged_in()) {
         set_flash('danger', 'Please log in to access this page.');
         header('Location: ' . get_base_url() . 'auth/login.php');
+        exit;
+    }
+}
+
+/**
+ * Require Chef role for recipe creation/editing routes
+ */
+function require_chef() {
+    require_login();
+    if (!is_chef()) {
+        set_flash('warning', 'Only registered Chefs can submit or edit recipes.');
+        header('Location: ' . get_base_url() . 'customer_dashboard.php');
         exit;
     }
 }

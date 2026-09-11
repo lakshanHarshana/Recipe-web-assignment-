@@ -58,10 +58,16 @@ $current_page = basename($_SERVER['PHP_SELF']);
                             <i class="bi bi-envelope-paper-fill me-1"></i> Contact Us
                         </a>
                     </li>
-                    <?php if (is_logged_in()): ?>
+                    <?php if (is_chef()): ?>
                         <li class="nav-item">
                             <a class="nav-link <?php echo ($current_page == 'dashboard.php') ? 'active' : ''; ?>" href="<?php echo get_base_url(); ?>dashboard.php">
-                                <i class="bi bi-speedometer2 me-1"></i> My Dashboard
+                                <i class="bi bi-journal-plus me-1"></i> Chef Portal
+                            </a>
+                        </li>
+                    <?php elseif (is_customer()): ?>
+                        <li class="nav-item">
+                            <a class="nav-link <?php echo ($current_page == 'customer_dashboard.php') ? 'active' : ''; ?>" href="<?php echo get_base_url(); ?>customer_dashboard.php">
+                                <i class="bi bi-heart-fill text-danger me-1"></i> My Portal
                             </a>
                         </li>
                     <?php endif; ?>
@@ -74,6 +80,9 @@ $current_page = basename($_SERVER['PHP_SELF']);
                     </button>
 
                     <?php if (is_logged_in()): ?>
+                        <span class="badge <?php echo is_chef() ? 'bg-accent' : 'bg-success'; ?> d-none d-md-inline me-1">
+                            <?php echo is_chef() ? '👨‍🍳 Chef' : '🍽️ Customer'; ?>
+                        </span>
                         <a href="<?php echo get_base_url(); ?>auth/profile.php" class="text-light me-2 d-none d-md-inline text-decoration-none text-hover-accent" title="View Profile">
                             <i class="bi bi-person-circle text-accent me-1"></i> <?php echo sanitize($_SESSION['username']); ?>
                         </a>

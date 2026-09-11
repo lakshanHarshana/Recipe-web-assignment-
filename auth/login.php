@@ -36,9 +36,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['username'] = $user['username'];
                 $_SESSION['user_email'] = $user['email'];
+                $_SESSION['user_role'] = $user['role'] ?? 'Customer';
 
-                set_flash('success', "Welcome back, " . sanitize($user['username']) . "!");
-                header("Location: ../dashboard.php");
+                set_flash('success', "Welcome back, " . sanitize($user['username']) . " (" . sanitize($user['role'] ?? 'User') . ")!");
+                
+                if (($user['role'] ?? '') === 'Chef') {
+                    header("Location: ../dashboard.php");
+                } else {
+                    header("Location: ../customer_dashboard.php");
+                }
                 exit;
             } else {
                 $errors['general'] = 'Invalid email/username or password.';

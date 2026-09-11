@@ -4,8 +4,8 @@ $page_title = "User Dashboard";
 require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/header.php';
 
-// Force login check
-require_login();
+// Force Chef role check
+require_chef();
 
 $user = current_user();
 $errors = [];

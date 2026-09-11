@@ -48,18 +48,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    $role = trim($_POST['role'] ?? 'Customer');
+    if (!in_array($role, ['Chef', 'Customer'])) {
+        $role = 'Customer';
+    }
+
     // Insert user into database
     if (empty($errors)) {
         try {
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-            $stmt = $pdo->prepare("INSERT INTO users (username, email, password) VALUES (:username, :email, :password)");
+            $stmt = $pdo->prepare("INSERT INTO users (username, email, password, role) VALUES (:username, :email, :password, :role)");
             $stmt->execute([
                 ':username' => $username,
                 ':email' => $email,
-                ':password' => $hashed_password
+                ':password' => $hashed_password,
+                ':role' => $role
             ]);
 
-            set_flash('success', 'Registration successful! You can now log in with your credentials.');
+            set_flash('success', 'Account registered successfully as a ' . sanitize($role) . '! Please log in.');
             header("Location: login.php");
             exit;
         } catch (PDOException $e) {
@@ -87,6 +93,17 @@ require_once __DIR__ . '/../includes/header.php';
                     <?php endif; ?>
 
                     <form id="registerForm" action="register.php" method="POST" novalidate>
+                        <div class="mb-3">
+                            <label for="role" class="form-label fw-medium">Register As: <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-person-badge text-muted"></i></span>
+                                <select class="form-select" id="role" name="role" required>
+                                    <option value="Customer" <?php echo (($_POST['role'] ?? '') === 'Customer') ? 'selected' : ''; ?>>🍽️ Customer / Food Lover (Browse, Rate & Save)</option>
+                                    <option value="Chef" <?php echo (($_POST['role'] ?? '') === 'Chef') ? 'selected' : ''; ?>>👨‍🍳 Chef (Publish & Manage Recipes)</option>
+                                </select>
+                            </div>
+                        </div>
+
                         <div class="mb-3">
                             <label for="username" class="form-label fw-medium">Username <span class="text-danger">*</span></label>
                             <div class="input-group">

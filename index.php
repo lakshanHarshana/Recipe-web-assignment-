@@ -200,9 +200,13 @@ $categories = ['All', 'Breakfast', 'Italian', 'Asian', 'Dessert', 'Healthy', 'Qu
         <div class="position-relative z-2 max-w-600 mx-auto">
             <h2 class="font-heading display-6 fw-bold mb-3">Have a Unique Recipe to Share?</h2>
             <p class="lead mb-4 text-light-50">Join our growing community of food enthusiasts! Submit your signature recipes, inspire home cooks, and manage your culinary collection.</p>
-            <?php if (is_logged_in()): ?>
+            <?php if (is_chef()): ?>
                 <a href="<?php echo get_base_url(); ?>dashboard.php" class="btn btn-accent rounded-pill btn-lg px-5">
-                    <i class="bi bi-plus-circle-fill me-2"></i>Add Your Recipe Now
+                    <i class="bi bi-plus-circle-fill me-2"></i>Publish New Recipe
+                </a>
+            <?php elseif (is_customer()): ?>
+                <a href="<?php echo get_base_url(); ?>customer_dashboard.php" class="btn btn-success rounded-pill btn-lg px-5">
+                    <i class="bi bi-heart-fill me-2"></i>My Saved Portal
                 </a>
             <?php else: ?>
                 <a href="<?php echo get_base_url(); ?>auth/register.php" class="btn btn-accent rounded-pill btn-lg px-5">
