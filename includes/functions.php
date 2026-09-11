@@ -74,10 +74,10 @@ function display_flash() {
  * Helper to get site base URL
  */
 function get_base_url() {
-    $script_dir = dirname($_SERVER['SCRIPT_NAME']);
+    $script_dir = dirname($_SERVER['SCRIPT_NAME'] ?? '');
     // Normalize path separators for Windows / subfolder execution
     $base = rtrim(str_replace('\\', '/', $script_dir), '/');
-    if (str_rpos($base, '/auth') === (strlen($base) - 5)) {
+    if (str_ends_with($base, '/auth')) {
         $base = substr($base, 0, -5);
     }
     return $base . '/';
