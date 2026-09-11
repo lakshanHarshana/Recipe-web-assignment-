@@ -4,6 +4,7 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+ob_start();
 
 /**
  * Sanitize string output for preventing XSS attacks

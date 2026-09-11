@@ -2,7 +2,7 @@
 // contact.php - Contact Form Page & Processing
 $page_title = "Contact Us";
 require_once __DIR__ . '/includes/db.php';
-require_once __DIR__ . '/includes/header.php';
+require_once __DIR__ . '/includes/functions.php';
 
 $errors = [];
 $success_message = '';
@@ -49,6 +49,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
+require_once __DIR__ . '/includes/header.php';
 ?>
 
 <div class="container mt-4 mb-5">

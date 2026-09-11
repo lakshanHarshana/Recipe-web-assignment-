@@ -2,7 +2,7 @@
 // dashboard.php - Authenticated User Dashboard & Recipe Submission Manager
 $page_title = "User Dashboard";
 require_once __DIR__ . '/includes/db.php';
-require_once __DIR__ . '/includes/header.php';
+require_once __DIR__ . '/includes/functions.php';
 
 // Force Chef role check
 require_chef();
@@ -142,6 +142,8 @@ try {
 } catch (PDOException $e) {
     $my_recipes = [];
 }
+
+require_once __DIR__ . '/includes/header.php';
 ?>
 
 <div class="container mt-4 mb-5">
