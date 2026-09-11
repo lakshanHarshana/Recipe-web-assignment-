@@ -11,6 +11,12 @@ if (!is_logged_in()) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!verify_csrf_token()) {
+        http_response_code(403);
+        echo json_encode(['status' => 'error', 'message' => 'Invalid or expired security token. Please refresh the page and try again.']);
+        exit;
+    }
+
     $user = current_user();
     $recipe_id = filter_var($_POST['recipe_id'] ?? 0, FILTER_VALIDATE_INT);
     $rating = filter_var($_POST['rating'] ?? 5, FILTER_VALIDATE_INT);
@@ -23,6 +29,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     try {
+        // Verify target recipe actually exists in database
+        $recipeCheck = $pdo->prepare("SELECT id FROM recipes WHERE id = :id");
+        $recipeCheck->execute([':id' => $recipe_id]);
+        if (!$recipeCheck->fetch()) {
+            http_response_code(404);
+            echo json_encode(['status' => 'error', 'message' => 'Recipe not found.']);
+            exit;
+        }
+
         // Upsert review (update if user already reviewed this recipe, else insert)
         $stmt = $pdo->prepare("SELECT id FROM reviews WHERE recipe_id = :recipe_id AND user_id = :user_id");
         $stmt->execute([':recipe_id' => $recipe_id, ':user_id' => $user['id']]);
@@ -49,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ]);
     } catch (PDOException $e) {
         http_response_code(500);
-        echo json_encode(['status' => 'error', 'message' => 'Failed to save review: ' . $e->getMessage()]);
+        echo json_encode(['status' => 'error', 'message' => handle_db_error($e, 'Failed to save review.')]);
     }
 }
 ?>

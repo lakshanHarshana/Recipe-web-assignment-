@@ -19,7 +19,7 @@ CREATE TABLE `users` (
   `username` VARCHAR(50) NOT NULL UNIQUE,
   `email` VARCHAR(100) NOT NULL UNIQUE,
   `password` VARCHAR(255) NOT NULL,
-  `role` ENUM('Chef', 'Customer') NOT NULL DEFAULT 'Chef',
+  `role` ENUM('Chef', 'Customer') NOT NULL DEFAULT 'Customer',
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -50,12 +50,15 @@ CREATE TABLE `recipes` (
 -- --------------------------------------------------------
 CREATE TABLE `messages` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `recipient_id` INT(11) DEFAULT NULL,
   `name` VARCHAR(100) NOT NULL,
   `email` VARCHAR(100) NOT NULL,
   `subject` VARCHAR(150) DEFAULT 'General Inquiry',
   `message` TEXT NOT NULL,
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `fk_messages_users` (`recipient_id`),
+  CONSTRAINT `fk_messages_users` FOREIGN KEY (`recipient_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------

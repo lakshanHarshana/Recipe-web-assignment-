@@ -4,7 +4,7 @@ $page_title = "Edit Recipe";
 require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/functions.php';
 
-require_login();
+require_chef();
 $user = current_user();
 $recipe_id = filter_var($_GET['id'] ?? ($_POST['recipe_id'] ?? 0), FILTER_VALIDATE_INT);
 
@@ -28,6 +28,10 @@ if (!$recipe) {
 $errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!verify_csrf_token()) {
+        $errors['general'] = 'Invalid or expired security token. Please try submitting again.';
+    }
+
     $title = trim($_POST['title'] ?? '');
     $category = trim($_POST['category'] ?? '');
     $prep_time = filter_var($_POST['prep_time'] ?? 0, FILTER_VALIDATE_INT);
@@ -40,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($title) || strlen($title) < 3) $errors['title'] = 'Recipe title must be at least 3 characters.';
     if (empty($category)) $errors['category'] = 'Please select a category.';
-    if ($prep_time === false || $prep_time < 0) $errors['prep_time'] = 'Valid prep time required.';
+    if ($prep_time === false || $prep_time <= 0) $errors['prep_time'] = 'Prep time must be a positive number greater than 0.';
     if ($cook_time === false || $cook_time < 0) $errors['cook_time'] = 'Valid cook time required.';
     if ($servings === false || $servings < 1) $errors['servings'] = 'Servings must be at least 1.';
     if (empty($ingredients) || strlen($ingredients) < 10) $errors['ingredients'] = 'Ingredients required.';
@@ -52,15 +56,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_FILES['recipe_image']) && $_FILES['recipe_image']['error'] === UPLOAD_ERR_OK) {
         $file_tmp = $_FILES['recipe_image']['tmp_name'];
         $file_name = $_FILES['recipe_image']['name'];
+        $file_size = $_FILES['recipe_image']['size'];
         $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
         $allowed_exts = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
 
-        if (in_array($file_ext, $allowed_exts)) {
-            $upload_dir = __DIR__ . '/images/recipes/';
-            if (!is_dir($upload_dir)) mkdir($upload_dir, 0755, true);
-            $new_filename = 'recipe_' . time() . '_' . uniqid() . '.' . $file_ext;
-            if (move_uploaded_file($file_tmp, $upload_dir . $new_filename)) {
-                $final_image_url = 'images/recipes/' . $new_filename;
+        if (!in_array($file_ext, $allowed_exts)) {
+            $errors['recipe_image'] = 'Invalid file format. Allowed: .jpg, .jpeg, .png, .webp, .gif';
+        } elseif ($file_size > 5 * 1024 * 1024) {
+            $errors['recipe_image'] = 'File size exceeds 5MB limit.';
+        } else {
+            $check_img = @getimagesize($file_tmp);
+            if ($check_img === false) {
+                $errors['recipe_image'] = 'Uploaded file is not a valid image.';
+            } else {
+                $upload_dir = __DIR__ . '/images/recipes/';
+                if (!is_dir($upload_dir)) mkdir($upload_dir, 0755, true);
+                $new_filename = 'recipe_' . time() . '_' . uniqid() . '.' . $file_ext;
+                if (move_uploaded_file($file_tmp, $upload_dir . $new_filename)) {
+                    $final_image_url = 'images/recipes/' . $new_filename;
+                } else {
+                    $errors['recipe_image'] = 'Failed to save uploaded image.';
+                }
             }
         }
     } elseif (!empty($image_url)) {
@@ -88,7 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header("Location: dashboard.php");
             exit;
         } catch (PDOException $e) {
-            $errors['general'] = 'Failed to update recipe: ' . $e->getMessage();
+            $errors['general'] = handle_db_error($e, 'Failed to update recipe.');
         }
     }
 }
@@ -110,6 +126,7 @@ require_once __DIR__ . '/includes/header.php';
                 <?php endif; ?>
 
                 <form id="addRecipeForm" action="edit_recipe.php?id=<?php echo (int)$recipe['id']; ?>" method="POST" enctype="multipart/form-data" novalidate>
+                    <input type="hidden" name="csrf_token" value="<?php echo generate_csrf_token(); ?>">
                     <input type="hidden" name="recipe_id" value="<?php echo (int)$recipe['id']; ?>">
 
                     <div class="mb-3">

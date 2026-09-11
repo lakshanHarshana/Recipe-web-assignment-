@@ -61,7 +61,7 @@ function loadCustomerFavorites() {
                     col.className = 'col-md-6 mb-3';
                     const imgUrl = recipe.image_url || 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=800&q=80';
                     col.innerHTML = `
-                        <div class="card border rounded-3 p-2 shadow-sm h-100 hover-shadow transition cursor-pointer" onclick='openRecipeModal(${JSON.stringify(recipe)})'>
+                        <div class="card fav-card-item border rounded-3 p-2 shadow-sm h-100 hover-shadow transition cursor-pointer">
                             <div class="d-flex gap-3 align-items-center">
                                 <img src="${escapeHtml(imgUrl)}" alt="${escapeHtml(recipe.title)}" class="rounded-3 object-fit-cover" style="width: 65px; height: 65px;">
                                 <div class="flex-grow-1 min-w-0">
@@ -72,6 +72,8 @@ function loadCustomerFavorites() {
                             </div>
                         </div>
                     `;
+                    const cardEl = col.querySelector('.fav-card-item');
+                    cardEl.addEventListener('click', () => openRecipeModal(recipe));
                     grid.appendChild(col);
                 });
             } else {
@@ -398,14 +400,19 @@ function initReviewForm() {
         const recipeId = document.getElementById('reviewRecipeId').value;
         const rating = document.getElementById('reviewRatingSelect').value;
         const comment = document.getElementById('reviewCommentText').value;
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
         const formData = new FormData();
         formData.append('recipe_id', recipeId);
         formData.append('rating', rating);
         formData.append('comment', comment);
+        formData.append('csrf_token', csrfToken);
 
         fetch('api/rate_recipe.php', {
             method: 'POST',
+            headers: {
+                'X-CSRF-Token': csrfToken
+            },
             body: formData
         })
         .then(res => res.json())
@@ -423,7 +430,7 @@ function initReviewForm() {
 }
 
 /**
- * Favorites Bookmarking System (LocalStorage)
+ * Favorites Bookmarking System (LocalStorage + Database Sync)
  */
 function getFavorites() {
     return JSON.parse(localStorage.getItem('flavorcraft_favorites') || '[]');
@@ -440,6 +447,18 @@ function toggleFavorite(recipeId, btnEl) {
     localStorage.setItem('flavorcraft_favorites', JSON.stringify(favs));
     initFavoriteButtons();
     loadCustomerFavorites();
+
+    // Sync with MySQL Database for logged-in users
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+    const formData = new FormData();
+    formData.append('recipe_id', id);
+    formData.append('csrf_token', csrfToken);
+
+    fetch('api/toggle_favorite.php', {
+        method: 'POST',
+        headers: { 'X-CSRF-Token': csrfToken },
+        body: formData
+    }).catch(err => console.log('Guest user, saved to localStorage only'));
 }
 
 function escapeHtml(text) {

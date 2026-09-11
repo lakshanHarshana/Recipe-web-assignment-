@@ -23,6 +23,7 @@ try {
     $rev_stmt->execute([':uid' => $user['id']]);
     $my_reviews = $rev_stmt->fetchAll();
 } catch (PDOException $e) {
+    error_log("Database Error: " . $e->getMessage());
     $my_reviews = [];
 }
 ?>

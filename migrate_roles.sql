@@ -1,9 +1,12 @@
 USE `recipe_book`;
 
--- Add role column if not exists
+-- Update users role default to Customer
+ALTER TABLE `users` MODIFY COLUMN `role` ENUM('Chef', 'Customer') NOT NULL DEFAULT 'Customer';
+
+-- Add recipient_id to messages table if not exists
 SET @dbname = DATABASE();
-SET @tablename = 'users';
-SET @columnname = 'role';
+SET @tablename = 'messages';
+SET @columnname = 'recipient_id';
 SET @preparedStatement = (SELECT IF(
   (
     SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
@@ -13,11 +16,11 @@ SET @preparedStatement = (SELECT IF(
       AND (column_name = @columnname)
   ) > 0,
   "SELECT 1",
-  "ALTER TABLE users ADD COLUMN role ENUM('Chef', 'Customer') NOT NULL DEFAULT 'Chef';"
+  "ALTER TABLE messages ADD COLUMN recipient_id INT(11) DEFAULT NULL, ADD CONSTRAINT fk_messages_users FOREIGN KEY (recipient_id) REFERENCES users(id) ON DELETE SET NULL;"
 ));
-PREPARE alterIfNotExists FROM @preparedStatement;
-EXECUTE alterIfNotExists;
-DEALLOCATE PREPARE alterIfNotExists;
+PREPARE alterMsgIfNotExists FROM @preparedStatement;
+EXECUTE alterMsgIfNotExists;
+DEALLOCATE PREPARE alterMsgIfNotExists;
 
 -- Update existing sample users
 UPDATE `users` SET `role` = 'Customer' WHERE `username` = 'john_doe';

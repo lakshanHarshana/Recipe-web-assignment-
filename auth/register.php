@@ -13,6 +13,10 @@ if (is_logged_in()) {
 $errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!verify_csrf_token()) {
+        $errors['general'] = 'Invalid or expired security token. Please try submitting the form again.';
+    }
+
     $username = trim($_POST['username'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
@@ -44,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $errors['general'] = 'Username or email address is already registered.';
             }
         } catch (PDOException $e) {
-            $errors['general'] = 'Database error: ' . $e->getMessage();
+            $errors['general'] = handle_db_error($e, 'Failed to verify existing user account details.');
         }
     }
 
@@ -69,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header("Location: login.php");
             exit;
         } catch (PDOException $e) {
-            $errors['general'] = 'Failed to register account: ' . $e->getMessage();
+            $errors['general'] = handle_db_error($e, 'Failed to register account.');
         }
     }
 }
@@ -93,6 +97,7 @@ require_once __DIR__ . '/../includes/header.php';
                     <?php endif; ?>
 
                     <form id="registerForm" action="register.php" method="POST" novalidate>
+                        <input type="hidden" name="csrf_token" value="<?php echo generate_csrf_token(); ?>">
                         <div class="mb-3">
                             <label for="role" class="form-label fw-medium">Register As: <span class="text-danger">*</span></label>
                             <div class="input-group">

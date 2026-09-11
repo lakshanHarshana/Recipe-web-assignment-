@@ -13,6 +13,10 @@ if (is_logged_in()) {
 $errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!verify_csrf_token()) {
+        $errors['general'] = 'Invalid or expired security token. Please try submitting the form again.';
+    }
+
     $email_username = trim($_POST['email_username'] ?? '');
     $password = $_POST['password'] ?? '';
 
@@ -50,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $errors['general'] = 'Invalid email/username or password.';
             }
         } catch (PDOException $e) {
-            $errors['general'] = 'Database error: ' . $e->getMessage();
+            $errors['general'] = handle_db_error($e, 'A database error occurred during login.');
         }
     }
 }
@@ -74,6 +78,7 @@ require_once __DIR__ . '/../includes/header.php';
                     <?php endif; ?>
 
                     <form id="loginForm" action="login.php" method="POST" novalidate>
+                        <input type="hidden" name="csrf_token" value="<?php echo generate_csrf_token(); ?>">
                         <div class="mb-3">
                             <label for="email_username" class="form-label fw-medium">Email or Username <span class="text-danger">*</span></label>
                             <div class="input-group">

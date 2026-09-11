@@ -9,10 +9,16 @@ $success_message = '';
 
 // Handle Form Submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!verify_csrf_token()) {
+        $errors['general'] = 'Invalid or expired security token. Please try submitting the form again.';
+    }
+
     $name = trim($_POST['name'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $subject = trim($_POST['subject'] ?? 'General Inquiry');
     $message = trim($_POST['message'] ?? '');
+    $recipient_id = filter_var($_POST['recipient_id'] ?? 0, FILTER_VALIDATE_INT);
+    if (!$recipient_id) $recipient_id = null;
 
     // Server-Side Validation
     if (empty($name) || strlen($name) < 2) {
@@ -34,8 +40,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Insert into MySQL Database if validation passes
     if (empty($errors)) {
         try {
-            $stmt = $pdo->prepare("INSERT INTO messages (name, email, subject, message) VALUES (:name, :email, :subject, :message)");
+            $stmt = $pdo->prepare("INSERT INTO messages (recipient_id, name, email, subject, message) VALUES (:recipient_id, :name, :email, :subject, :message)");
             $stmt->execute([
+                ':recipient_id' => $recipient_id,
                 ':name' => $name,
                 ':email' => $email,
                 ':subject' => $subject,
@@ -45,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header("Location: contact.php");
             exit;
         } catch (PDOException $e) {
-            $errors['general'] = 'Failed to submit message. Please try again later. Error: ' . $e->getMessage();
+            $errors['general'] = handle_db_error($e, 'Failed to submit message. Please try again later.');
         }
     }
 }
@@ -121,6 +128,7 @@ require_once __DIR__ . '/includes/header.php';
                         <?php endif; ?>
 
                         <form id="contactForm" action="contact.php" method="POST" novalidate>
+                            <input type="hidden" name="csrf_token" value="<?php echo generate_csrf_token(); ?>">
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <label for="name" class="form-label fw-medium">Your Name <span class="text-danger">*</span></label>

@@ -13,6 +13,10 @@ $success_msg = '';
 
 // Handle Recipe Creation
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_recipe') {
+    if (!verify_csrf_token()) {
+        $errors['general'] = 'Invalid or expired security token. Please try submitting again.';
+    }
+
     $title = trim($_POST['title'] ?? '');
     $category = trim($_POST['category'] ?? '');
     $prep_time = filter_var($_POST['prep_time'] ?? 0, FILTER_VALIDATE_INT);
@@ -32,8 +36,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         $errors['category'] = 'Please select a recipe category.';
     }
 
-    if ($prep_time === false || $prep_time < 0) {
-        $errors['prep_time'] = 'Please enter a valid prep time in minutes.';
+    if ($prep_time === false || $prep_time <= 0) {
+        $errors['prep_time'] = 'Prep time must be a positive number greater than 0.';
     }
 
     if ($cook_time === false || $cook_time < 0) {
@@ -67,18 +71,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         } elseif ($file_size > 5 * 1024 * 1024) {
             $errors['recipe_image'] = 'Uploaded file exceeds maximum size of 5MB.';
         } else {
-            $upload_dir = __DIR__ . '/images/recipes/';
-            if (!is_dir($upload_dir)) {
-                mkdir($upload_dir, 0755, true);
-            }
-
-            $new_filename = 'recipe_' . time() . '_' . uniqid() . '.' . $file_ext;
-            $destination = $upload_dir . $new_filename;
-
-            if (move_uploaded_file($file_tmp, $destination)) {
-                $uploaded_image_url = 'images/recipes/' . $new_filename;
+            $check_img = @getimagesize($file_tmp);
+            if ($check_img === false) {
+                $errors['recipe_image'] = 'Uploaded file is not a valid image.';
             } else {
-                $errors['recipe_image'] = 'Failed to upload image file. Please try again.';
+                $upload_dir = __DIR__ . '/images/recipes/';
+                if (!is_dir($upload_dir)) {
+                    mkdir($upload_dir, 0755, true);
+                }
+
+                $new_filename = 'recipe_' . time() . '_' . uniqid() . '.' . $file_ext;
+                $destination = $upload_dir . $new_filename;
+
+                if (move_uploaded_file($file_tmp, $destination)) {
+                    $uploaded_image_url = 'images/recipes/' . $new_filename;
+                } else {
+                    $errors['recipe_image'] = 'Failed to upload image file. Please try again.';
+                }
             }
         }
     }
@@ -113,13 +122,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             header("Location: dashboard.php");
             exit;
         } catch (PDOException $e) {
-            $errors['general'] = 'Failed to publish recipe: ' . $e->getMessage();
+            $errors['general'] = handle_db_error($e, 'Failed to publish recipe.');
         }
     }
 }
 
 // Handle Recipe Deletion
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_recipe') {
+    if (!verify_csrf_token()) {
+        set_flash('danger', 'Invalid security token.');
+        header("Location: dashboard.php");
+        exit;
+    }
+
     $recipe_id = filter_var($_POST['recipe_id'] ?? 0, FILTER_VALIDATE_INT);
     if ($recipe_id) {
         try {
@@ -129,7 +144,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             header("Location: dashboard.php");
             exit;
         } catch (PDOException $e) {
-            $errors['general'] = 'Failed to delete recipe: ' . $e->getMessage();
+            $errors['general'] = handle_db_error($e, 'Failed to delete recipe.');
         }
     }
 }
@@ -174,6 +189,7 @@ require_once __DIR__ . '/includes/header.php';
                 <?php endif; ?>
 
                 <form id="addRecipeForm" action="dashboard.php" method="POST" enctype="multipart/form-data" novalidate>
+                    <input type="hidden" name="csrf_token" value="<?php echo generate_csrf_token(); ?>">
                     <input type="hidden" name="action" value="add_recipe">
 
                     <div class="mb-3">
@@ -309,6 +325,7 @@ require_once __DIR__ . '/includes/header.php';
                                             <i class="bi bi-pencil-fill"></i>
                                         </a>
                                         <form action="dashboard.php" method="POST" onsubmit="return confirm('Are you sure you want to delete this recipe?');">
+                                            <input type="hidden" name="csrf_token" value="<?php echo generate_csrf_token(); ?>">
                                             <input type="hidden" name="action" value="delete_recipe">
                                             <input type="hidden" name="recipe_id" value="<?php echo (int)$rec['id']; ?>">
                                             <button type="submit" class="btn btn-outline-danger btn-sm rounded-circle" title="Delete Recipe">
@@ -327,7 +344,8 @@ require_once __DIR__ . '/includes/header.php';
             <!-- Contact Messages Inbox Panel -->
             <?php
             try {
-                $msg_stmt = $pdo->query("SELECT * FROM messages ORDER BY created_at DESC");
+                $msg_stmt = $pdo->prepare("SELECT * FROM messages WHERE recipient_id = :user_id OR recipient_id IS NULL ORDER BY created_at DESC");
+                $msg_stmt->execute([':user_id' => $user['id']]);
                 $user_messages = $msg_stmt->fetchAll();
             } catch (PDOException $e) {
                 $user_messages = [];

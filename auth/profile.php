@@ -16,9 +16,13 @@ $errors = [];
 
 // Handle Profile Updates
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!verify_csrf_token()) {
+        $errors['profile_general'] = $errors['pass_general'] = 'Invalid or expired security token. Please try submitting again.';
+    }
+
     $action = $_POST['action'] ?? '';
 
-    if ($action === 'update_profile') {
+    if ($action === 'update_profile' && empty($errors)) {
         $username = trim($_POST['username'] ?? '');
         $email = trim($_POST['email'] ?? '');
 
@@ -47,10 +51,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     exit;
                 }
             } catch (PDOException $e) {
-                $errors['profile_general'] = 'Failed to update profile: ' . $e->getMessage();
+                $errors['profile_general'] = handle_db_error($e, 'Failed to update profile details.');
             }
         }
-    } elseif ($action === 'change_password') {
+    } elseif ($action === 'change_password' && empty($errors)) {
         $current_password = $_POST['current_password'] ?? '';
         $new_password = $_POST['new_password'] ?? '';
         $confirm_password = $_POST['confirm_password'] ?? '';
@@ -76,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 header("Location: profile.php");
                 exit;
             } catch (PDOException $e) {
-                $errors['pass_general'] = 'Failed to change password: ' . $e->getMessage();
+                $errors['pass_general'] = handle_db_error($e, 'Failed to change password.');
             }
         }
     }
@@ -111,6 +115,7 @@ require_once __DIR__ . '/../includes/header.php';
                         <?php endif; ?>
 
                         <form action="profile.php" method="POST">
+                            <input type="hidden" name="csrf_token" value="<?php echo generate_csrf_token(); ?>">
                             <input type="hidden" name="action" value="update_profile">
                             
                             <div class="mb-3">
@@ -144,6 +149,7 @@ require_once __DIR__ . '/../includes/header.php';
                         <?php endif; ?>
 
                         <form action="profile.php" method="POST">
+                            <input type="hidden" name="csrf_token" value="<?php echo generate_csrf_token(); ?>">
                             <input type="hidden" name="action" value="change_password">
 
                             <div class="mb-3">

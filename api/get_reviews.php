@@ -30,6 +30,6 @@ try {
     ]);
 } catch (PDOException $e) {
     http_response_code(500);
-    echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+    echo json_encode(['status' => 'error', 'message' => handle_db_error($e, 'Failed to retrieve reviews.')]);
 }
 ?>
